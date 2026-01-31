@@ -204,6 +204,11 @@
                 box-shadow: none !important;
                 margin: 0 !important;
             }
+            /* Prevent box-shadow from rendering as a grey tile in PDF */
+            .qr-container {
+                box-shadow: none !important;
+                background: #ffffff !important;
+            }
             body {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;

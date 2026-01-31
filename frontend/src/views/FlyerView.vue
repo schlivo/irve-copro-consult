@@ -322,8 +322,10 @@ const printFlyer = () => {
     border-left: 4px solid #22c55e !important;
   }
 
+  /* No box-shadow in print to avoid greyish tile in PDF */
   .qr-container {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
   }
 
   /* Ensure SVG colors print */
