@@ -1,0 +1,12 @@
+# Used by: docker compose up (local run only)
+# Overrides network so the container attaches to a local network instead of
+# traefik-public (Swarm overlay networks are not attachable by compose containers).
+# Stack deploy uses only docker-compose.yml, so it still uses traefik-public.
+services:
+  enquete-irve:
+    networks:
+      - irve-local
+
+networks:
+  irve-local:
+    driver: bridge

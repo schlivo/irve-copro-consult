@@ -1,43 +1,58 @@
+# Local: docker compose up --build  (app at http://localhost:3000; uses docker-compose.override.yml for local network)
+# Stack: docker stack deploy -c docker-compose.yml irve  (build is ignored; use pre-built image)
 version: '3.8'
 
 services:
   enquete-irve:
     build: .
-    image: enquete-irve:latest
-    container_name: enquete-irve
-    restart: unless-stopped
+    image: registry.git.example.com/dejan/irve-copro:latest
+    # Load .env into container (so ADMIN_PASSWORD etc. are used with both compose and stack deploy)
+    env_file: .env
+    # Expose port for local run (docker compose up); stack deploy can still use Traefik only
+    ports:
+      - "3000:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
       - DB_PATH=/app/data/survey.db
-      # Configuration - customize these values
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-irve2024}
+      # Configuration (from env_file: .env; fallbacks only for compose variable substitution)
       - BUILDINGS=${BUILDINGS:-A,B,C,D}
       - TOTAL_LOTS=${TOTAL_LOTS:-75}
       - CONTACT_EMAIL=${CONTACT_EMAIL:-conseil-syndical@exemple.fr}
       - SYNDIC_EMAIL=${SYNDIC_EMAIL:-syndic@exemple.fr}
     volumes:
-      # Host-mapped volume for database persistence
-      - ./data:/app/data
+      - irve-data:/app/data
     networks:
       - traefik-public
     deploy:
       mode: replicated
       replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        order: start-first
+        parallelism: 1
+        delay: 10s
       labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.irve.rule=Host(`irve.example.com`)"
-        - "traefik.http.routers.irve.entrypoints=websecure"
-        - "traefik.http.routers.irve.tls.certresolver=letsencrypt"
-        - "traefik.http.services.irve.loadbalancer.server.port=3000"
-        - "traefik.docker.network=traefik-public"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.irve.rule=Host(`irve.example.com`)"
-      - "traefik.http.routers.irve.entrypoints=websecure"
-      - "traefik.http.routers.irve.tls.certresolver=letsencrypt"
-      - "traefik.http.services.irve.loadbalancer.server.port=3000"
-      - "traefik.docker.network=traefik-public"
+        - traefik.enable=true
+        - traefik.swarm.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        # HTTPS redirect middleware
+        - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+        - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+        # HTTP router (redirect to HTTPS)
+        - traefik.http.routers.irve-http.rule=Host(`irve.example.com`)
+        - traefik.http.routers.irve-http.entrypoints=http
+        - traefik.http.routers.irve-http.middlewares=https-redirect
+        - traefik.http.routers.irve-http.service=irve
+        # HTTPS router
+        - traefik.http.routers.irve-https.rule=Host(`irve.example.com`)
+        - traefik.http.routers.irve-https.entrypoints=https
+        - traefik.http.routers.irve-https.tls=true
+        - traefik.http.routers.irve-https.tls.certresolver=le
+        - traefik.http.routers.irve-https.service=irve
+        # Backend service
+        - traefik.http.services.irve.loadbalancer.server.port=3000
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
@@ -48,3 +63,6 @@ services:
 networks:
   traefik-public:
     external: true
+
+volumes:
+  irve-data:

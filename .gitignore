@@ -10,14 +10,14 @@ build/
 .env.local
 .env.*.local
 
-# SQLite database
+# Database (SQLite)
 *.db
 *.db-shm
 *.db-wal
 *.sqlite
 *.sqlite3
 backend/data/
-data/*.db
+data/
 !data/.gitkeep
 
 # IDE
