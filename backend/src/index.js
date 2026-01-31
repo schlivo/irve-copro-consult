@@ -32,6 +32,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Public config endpoint (non-sensitive configuration for frontend)
+app.get('/api/config', (req, res) => {
+  const BUILDINGS = (process.env.BUILDINGS || 'A,B,C,D').split(',').map(b => b.trim());
+  const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'conseil-syndical@exemple.fr';
+  const SYNDIC_EMAIL = process.env.SYNDIC_EMAIL || 'syndic@exemple.fr';
+  res.json({
+    buildings: BUILDINGS,
+    contact_email: CONTACT_EMAIL,
+    syndic_email: SYNDIC_EMAIL
+  });
+});
+
 // Serve static files in production
 const publicPath = join(__dirname, '../public');
 app.use(express.static(publicPath));

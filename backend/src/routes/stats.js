@@ -3,7 +3,19 @@ import db from '../db.js';
 
 const router = Router();
 
-const TOTAL_LOTS = 75;
+// Configuration from environment variables
+const TOTAL_LOTS = parseInt(process.env.TOTAL_LOTS, 10) || 75;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'irve2024';
+
+// GET /api/stats/auth - Verify admin password
+router.post('/auth', (req, res) => {
+  const { password } = req.body;
+  if (password === ADMIN_PASSWORD) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, error: 'Mot de passe incorrect' });
+  }
+});
 
 // GET /api/stats - Get aggregated anonymous statistics
 router.get('/', (req, res) => {
@@ -125,8 +137,7 @@ router.get('/', (req, res) => {
 export function handleExportCSV(req, res) {
   const adminPassword = req.headers['x-admin-password'];
 
-  // Simple password check (in production, use proper auth)
-  if (adminPassword !== 'irve2024') {
+  if (adminPassword !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Non autorisé' });
   }
 

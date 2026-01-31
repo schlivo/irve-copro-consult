@@ -4,12 +4,15 @@ import db from '../db.js';
 
 const router = Router();
 
+// Configuration from environment variables
+const BUILDINGS = (process.env.BUILDINGS || 'A,B,C,D').split(',').map(b => b.trim());
+
 // Validation rules
 const surveyValidation = [
   body('building')
     .trim()
     .notEmpty().withMessage('Le bâtiment est requis')
-    .isIn(['A', 'B', 'C', 'D']).withMessage('Bâtiment invalide'),
+    .isIn(BUILDINGS).withMessage('Bâtiment invalide'),
   body('apartment')
     .optional()
     .trim()

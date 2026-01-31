@@ -10,8 +10,15 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - DB_PATH=/app/data/survey.db
+      # Configuration - customize these values
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-irve2024}
+      - BUILDINGS=${BUILDINGS:-A,B,C,D}
+      - TOTAL_LOTS=${TOTAL_LOTS:-75}
+      - CONTACT_EMAIL=${CONTACT_EMAIL:-conseil-syndical@exemple.fr}
+      - SYNDIC_EMAIL=${SYNDIC_EMAIL:-syndic@exemple.fr}
     volumes:
-      - irve-data:/app/data
+      # Host-mapped volume for database persistence
+      - ./data:/app/data
     networks:
       - traefik-public
     deploy:
@@ -37,10 +44,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-
-volumes:
-  irve-data:
-    driver: local
 
 networks:
   traefik-public:

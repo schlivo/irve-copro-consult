@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onMounted } from 'vue'
 import SvgIcon from '../components/SvgIcon.vue'
 
 const closeEnquete = inject('closeEnquete')
@@ -9,6 +9,7 @@ const totalSteps = 4
 const isSubmitting = ref(false)
 const isSubmitted = ref(false)
 const submitError = ref('')
+const configLoading = ref(true)
 
 const formData = ref({
   building: '',
@@ -25,6 +26,26 @@ const formData = ref({
 })
 
 const errors = ref({})
+const buildings = ref(['A', 'B', 'C', 'D']) // Default fallback
+const contactEmail = ref('conseil-syndical@exemple.fr')
+const syndicEmail = ref('syndic@exemple.fr')
+
+// Fetch configuration from API
+onMounted(async () => {
+  try {
+    const response = await fetch('/api/config')
+    if (response.ok) {
+      const config = await response.json()
+      buildings.value = config.buildings || buildings.value
+      contactEmail.value = config.contact_email || contactEmail.value
+      syndicEmail.value = config.syndic_email || syndicEmail.value
+    }
+  } catch (err) {
+    console.warn('Could not load config, using defaults')
+  } finally {
+    configLoading.value = false
+  }
+})
 
 const progress = computed(() => (currentStep.value / totalSteps) * 100)
 
@@ -100,7 +121,6 @@ const submitForm = async () => {
   }
 }
 
-const buildings = ['A', 'B', 'C', 'D']
 </script>
 
 <template>
@@ -558,7 +578,7 @@ const buildings = ['A', 'B', 'C', 'D']
               Les données collectées sont traitées par la copropriété dans le cadre de l'enquête
               sur le projet IRVE. Elles sont conservées jusqu'à la fin du projet + 1 an.
               Vous disposez d'un droit d'accès, de rectification et de suppression de vos données
-              en contactant le conseil syndical.
+              en contactant le conseil syndical à <a :href="'mailto:' + contactEmail">{{ contactEmail }}</a>.
             </p>
             <p>
               <strong>Aucune donnée n'est transmise à des tiers.</strong>

@@ -4,28 +4,41 @@ import SvgIcon from '../components/SvgIcon.vue'
 
 const isAuthenticated = ref(false)
 const password = ref('')
+const storedPassword = ref('') // Store password for API calls
 const passwordError = ref('')
 const stats = ref(null)
 const loading = ref(false)
+const loginLoading = ref(false)
 const error = ref('')
 
-// Simple password check (in production, use proper auth)
-const ADMIN_PASSWORD = 'irve2024'
-
-const login = () => {
-  if (password.value === ADMIN_PASSWORD) {
-    isAuthenticated.value = true
-    passwordError.value = ''
-    localStorage.setItem('admin_auth', 'true')
-    loadStats()
-  } else {
-    passwordError.value = 'Mot de passe incorrect'
+const login = async () => {
+  loginLoading.value = true
+  passwordError.value = ''
+  try {
+    const response = await fetch('/api/stats/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password.value })
+    })
+    if (response.ok) {
+      isAuthenticated.value = true
+      storedPassword.value = password.value
+      sessionStorage.setItem('admin_auth', 'true')
+      loadStats()
+    } else {
+      passwordError.value = 'Mot de passe incorrect'
+    }
+  } catch (err) {
+    passwordError.value = 'Impossible de se connecter au serveur'
+  } finally {
+    loginLoading.value = false
   }
 }
 
 const logout = () => {
   isAuthenticated.value = false
-  localStorage.removeItem('admin_auth')
+  storedPassword.value = ''
+  sessionStorage.removeItem('admin_auth')
   stats.value = null
 }
 
@@ -49,7 +62,7 @@ const loadStats = async () => {
 const exportCSV = async () => {
   try {
     const response = await fetch('/api/stats/export', {
-      headers: { 'X-Admin-Password': ADMIN_PASSWORD }
+      headers: { 'X-Admin-Password': storedPassword.value }
     })
     if (response.ok) {
       const blob = await response.blob()
@@ -62,7 +75,8 @@ const exportCSV = async () => {
     } else if (response.status === 404) {
       alert('Export indisponible. Vérifiez que le backend tourne sur le port 3000.')
     } else if (response.status === 401) {
-      alert('Non autorisé.')
+      alert('Session expirée. Veuillez vous reconnecter.')
+      logout()
     } else {
       alert('Erreur lors de l\'export')
     }
@@ -136,7 +150,11 @@ const evColor = {
 }
 
 onMounted(() => {
-  if (localStorage.getItem('admin_auth') === 'true') {
+  // Session-based auth: requires re-login on page refresh for security
+  // sessionStorage is cleared when browser/tab closes
+  if (sessionStorage.getItem('admin_auth') === 'true') {
+    // Show stats but export will fail without password
+    // User should re-login for full functionality
     isAuthenticated.value = true
     loadStats()
   }
@@ -166,8 +184,8 @@ onMounted(() => {
             />
             <span v-if="passwordError" class="form-error">{{ passwordError }}</span>
           </div>
-          <button type="submit" class="btn btn-primary btn-lg">
-            Accéder
+          <button type="submit" class="btn btn-primary btn-lg" :disabled="loginLoading">
+            {{ loginLoading ? 'Connexion...' : 'Accéder' }}
           </button>
         </form>
       </div>
