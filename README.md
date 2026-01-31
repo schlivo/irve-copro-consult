@@ -269,7 +269,7 @@ sudo certbot --nginx -d irve.votre-domaine.fr
 
 ### Option 2 : Docker
 
-#### Docker Swarm + Traefik (irve.example.com)
+#### Docker Swarm + Traefik
 
 Deploy as a stack behind an existing Traefik proxy. **No host ports** are published for the app; Traefik routes by hostname.
 
@@ -295,7 +295,7 @@ docker service ls
 docker service logs irve_enquete-irve
 ```
 
-Requires: Swarm initialized, overlay network `traefik-public`, Traefik with `websecure` and `letsencrypt`, DNS `irve.example.com` → host.
+Requires: Swarm initialized, overlay network `traefik-public`, Traefik with `websecure` and `letsencrypt`, DNS pointing to your host.
 
 #### Avec Docker Compose (standalone)
 
