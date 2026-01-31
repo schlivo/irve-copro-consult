@@ -1,9 +1,3 @@
-<script setup>
-import { inject } from 'vue'
-
-const openEnquete = inject('openEnquete')
-</script>
-
 <template>
   <div class="page">
     <div class="container">
@@ -146,13 +140,6 @@ const openEnquete = inject('openEnquete')
         </div>
       </section>
 
-      <div class="cta-box">
-        <h3>Prêt à donner votre avis ?</h3>
-        <p>Participez à l'enquête pour nous aider à définir la meilleure solution.</p>
-        <button @click="openEnquete" class="btn btn-primary">
-          Participer à l'enquête
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -304,21 +291,4 @@ const openEnquete = inject('openEnquete')
   opacity: 0.9;
 }
 
-.cta-box {
-  background: var(--color-bg-alt);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-.cta-box h3 {
-  margin-bottom: 0.5rem;
-}
-
-.cta-box p {
-  color: var(--color-text-light);
-  margin-bottom: 1rem;
-}
 </style>

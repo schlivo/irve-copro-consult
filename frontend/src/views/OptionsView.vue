@@ -1,7 +1,6 @@
 <script setup>
-import { ref, inject } from 'vue'
+import { ref } from 'vue'
 
-const openEnquete = inject('openEnquete')
 const selectedOption = ref(null)
 
 const options = [
@@ -308,13 +307,6 @@ const getRatingBars = (value, max = 5) => {
         </div>
       </section>
 
-      <div class="cta-box">
-        <h3>Faites entendre votre voix !</h3>
-        <p>Chaque réponse compte pour convaincre les opérateurs de lancer le projet.</p>
-        <button @click="openEnquete" class="btn btn-primary btn-lg">
-          Participer à l'enquête
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -660,20 +652,4 @@ tr.recommended:hover {
   margin: 0 !important;
 }
 
-.cta-box {
-  background: var(--color-bg-alt);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  text-align: center;
-}
-
-.cta-box h3 {
-  margin-bottom: 0.5rem;
-}
-
-.cta-box p {
-  color: var(--color-text-light);
-  margin-bottom: 1rem;
-}
 </style>

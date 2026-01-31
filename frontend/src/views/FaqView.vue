@@ -1,7 +1,6 @@
 <script setup>
-import { ref, inject } from 'vue'
+import { ref } from 'vue'
 
-const openEnquete = inject('openEnquete')
 const openItems = ref([])
 
 const toggleItem = (index) => {
@@ -113,13 +112,6 @@ const faqItems = [
         </div>
       </section>
 
-      <div class="cta-box">
-        <h3>Prêt à donner votre avis ?</h3>
-        <p>Participez à l'enquête pour nous aider à dimensionner le projet.</p>
-        <button @click="openEnquete" class="btn btn-primary">
-          Participer à l'enquête
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -228,20 +220,4 @@ const faqItems = [
   font-size: 0.9rem;
 }
 
-.cta-box {
-  background: var(--color-bg-alt);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  text-align: center;
-}
-
-.cta-box h3 {
-  margin-bottom: 0.5rem;
-}
-
-.cta-box p {
-  color: var(--color-text-light);
-  margin-bottom: 1rem;
-}
 </style>

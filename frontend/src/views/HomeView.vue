@@ -2,7 +2,6 @@
 import { ref, onMounted, inject } from 'vue'
 import StatCard from '../components/StatCard.vue'
 
-const openEnquete = inject('openEnquete')
 const navigateToSection = inject('navigateToSection')
 
 const stats = ref({
@@ -46,10 +45,7 @@ const evCount = () => {
           pour véhicules électriques dans notre copropriété.
         </p>
         <div class="hero-actions">
-          <button @click="openEnquete" class="btn btn-primary btn-lg">
-            Participer à l'enquête
-          </button>
-          <button @click="navigateToSection('comprendre')" class="btn btn-secondary btn-lg">
+          <button @click="navigateToSection('comprendre')" class="btn btn-primary btn-lg">
             En savoir plus
           </button>
         </div>
@@ -168,9 +164,6 @@ const evCount = () => {
           <div class="cta-highlight">
             Même sans véhicule électrique aujourd'hui, votre intérêt futur compte !
           </div>
-          <button @click="openEnquete" class="btn btn-primary btn-lg">
-            Participer à l'enquête (2 min)
-          </button>
         </div>
       </div>
     </section>

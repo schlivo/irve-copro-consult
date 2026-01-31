@@ -1,5 +1,5 @@
 <script setup>
-import { ref, provide, onMounted, onUnmounted } from 'vue'
+import { ref, provide, onMounted, onUnmounted, nextTick } from 'vue'
 
 // Import all views as components
 import HomeView from './views/HomeView.vue'
@@ -13,7 +13,7 @@ const sections = [
   { id: 'accueil', label: 'Accueil', component: HomeView },
   { id: 'comprendre', label: 'Comprendre', component: ComprendreView },
   { id: 'options', label: 'Options', component: OptionsView },
-  { id: 'aides', label: 'Aides', component: AidesView },
+  { id: 'aides', label: 'Financement', component: AidesView },
   { id: 'faq', label: 'FAQ', component: FaqView },
 ]
 
@@ -21,6 +21,19 @@ const currentSection = ref(0)
 const isEnqueteOpen = ref(false)
 const scrollContainer = ref(null)
 const isScrolling = ref(false)
+const lastScrollTop = ref(0)
+const headerHidden = ref(false)
+const scrollAnimationId = ref(null)
+const scrollEndTimeout = ref(null)
+const lastScrollTime = ref(0)
+const scrollVelocity = ref(0)
+
+/** Ease-in-out cubic for smooth start/end. */
+const easeInOutCubic = (t) =>
+  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+
+/** Ease-out for snap animation */
+const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3)
 
 const openEnquete = () => {
   isEnqueteOpen.value = true
@@ -45,28 +58,180 @@ const closeEnquete = () => {
 }
 provide('closeEnquete', closeEnquete)
 
+const SCROLL_DURATION_MS = 1100
+
 const scrollToSection = (index) => {
-  if (scrollContainer.value && !isScrolling.value) {
-    isScrolling.value = true
-    const section = scrollContainer.value.children[index]
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' })
-      currentSection.value = index
-      setTimeout(() => {
-        isScrolling.value = false
-      }, 800)
+  const container = scrollContainer.value
+  const section = container?.children[index]
+  if (!container || !section) return
+
+  if (scrollAnimationId.value != null) {
+    cancelAnimationFrame(scrollAnimationId.value)
+    scrollAnimationId.value = null
+  }
+
+  const startTop = container.scrollTop
+  const targetTop = section.offsetTop
+  if (startTop === targetTop) {
+    currentSection.value = index
+    location.hash = sections[index].id
+    return
+  }
+
+  isScrolling.value = true
+  currentSection.value = index
+  location.hash = sections[index].id
+  headerHidden.value = false
+
+  const startTime = performance.now()
+
+  const tick = (now) => {
+    const elapsed = now - startTime
+    const progress = Math.min(elapsed / SCROLL_DURATION_MS, 1)
+    const eased = easeInOutCubic(progress)
+    container.scrollTop = startTop + (targetTop - startTop) * eased
+
+    if (progress < 1) {
+      scrollAnimationId.value = requestAnimationFrame(tick)
+    } else {
+      container.scrollTop = targetTop
+      isScrolling.value = false
+      scrollAnimationId.value = null
     }
+  }
+
+  scrollAnimationId.value = requestAnimationFrame(tick)
+}
+
+/** Find the nearest section to snap to based on scroll position */
+const findNearestSection = (scrollTop, viewportHeight) => {
+  const container = scrollContainer.value
+  if (!container) return 0
+
+  let nearestSection = 0
+  let nearestDistance = Infinity
+
+  for (let i = 0; i < container.children.length; i++) {
+    const section = container.children[i]
+    const sectionTop = section.offsetTop - container.offsetTop
+    const distance = Math.abs(scrollTop - sectionTop)
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance
+      nearestSection = i
+    }
+  }
+
+  return nearestSection
+}
+
+/** Smooth snap to nearest section */
+const snapToNearestSection = () => {
+  const container = scrollContainer.value
+  if (!container || isScrolling.value) return
+
+  const scrollTop = container.scrollTop
+  const viewportHeight = container.clientHeight
+  const nearestIndex = findNearestSection(scrollTop, viewportHeight)
+  const section = container.children[nearestIndex]
+
+  if (!section) return
+
+  const targetTop = section.offsetTop - container.offsetTop
+  const distance = Math.abs(scrollTop - targetTop)
+
+  // Only snap if we're within a reasonable distance (30% of viewport)
+  if (distance < viewportHeight * 0.3 && distance > 5) {
+    // Smooth snap animation
+    isScrolling.value = true
+    const startTop = scrollTop
+    const startTime = performance.now()
+    const duration = Math.min(400, 200 + distance * 0.5) // Faster for shorter distances
+
+    const animateSnap = (now) => {
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = easeOutCubic(progress)
+      container.scrollTop = startTop + (targetTop - startTop) * eased
+
+      if (progress < 1) {
+        scrollAnimationId.value = requestAnimationFrame(animateSnap)
+      } else {
+        container.scrollTop = targetTop
+        isScrolling.value = false
+        scrollAnimationId.value = null
+        currentSection.value = nearestIndex
+        history.replaceState(null, '', '#' + sections[nearestIndex].id)
+      }
+    }
+
+    scrollAnimationId.value = requestAnimationFrame(animateSnap)
   }
 }
 
 const handleScroll = () => {
-  if (scrollContainer.value && !isScrolling.value) {
-    const scrollTop = scrollContainer.value.scrollTop
-    const sectionHeight = window.innerHeight
-    const newSection = Math.round(scrollTop / sectionHeight)
-    if (newSection !== currentSection.value && newSection >= 0 && newSection < sections.length) {
-      currentSection.value = newSection
+  if (!scrollContainer.value || isScrolling.value) return
+
+  const container = scrollContainer.value
+  const scrollTop = container.scrollTop
+  const now = performance.now()
+
+  // Calculate velocity
+  const timeDelta = now - lastScrollTime.value
+  if (timeDelta > 0) {
+    scrollVelocity.value = (scrollTop - lastScrollTop.value) / timeDelta
+  }
+
+  lastScrollTime.value = now
+  lastScrollTop.value = scrollTop
+
+  // Find current section for indicator
+  const viewportHeight = container.clientHeight
+  let bestSection = 0
+  let bestVisibility = 0
+
+  for (let i = 0; i < container.children.length; i++) {
+    const section = container.children[i]
+    const sectionTop = section.offsetTop - container.offsetTop
+    const sectionBottom = sectionTop + section.offsetHeight
+    const visibleTop = Math.max(sectionTop, scrollTop)
+    const visibleBottom = Math.min(sectionBottom, scrollTop + viewportHeight)
+    const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+    const coversTop = sectionTop <= scrollTop + 100 && sectionBottom > scrollTop + 100
+    const visibility = coversTop ? visibleHeight + 10000 : visibleHeight
+
+    if (visibility > bestVisibility) {
+      bestVisibility = visibility
+      bestSection = i
     }
+  }
+
+  if (bestSection !== currentSection.value) {
+    currentSection.value = bestSection
+    history.replaceState(null, '', '#' + sections[bestSection].id)
+  }
+
+  // Clear previous timeout and set new one for scroll end detection
+  if (scrollEndTimeout.value) {
+    clearTimeout(scrollEndTimeout.value)
+  }
+
+  // Snap after scroll ends (when user stops scrolling)
+  scrollEndTimeout.value = setTimeout(() => {
+    // Only snap if velocity is low (user has stopped or nearly stopped)
+    if (Math.abs(scrollVelocity.value) < 0.5) {
+      snapToNearestSection()
+    }
+  }, 150)
+}
+
+/** Sync URL hash with section (deep links, back button). */
+const syncHashToSection = () => {
+  const hash = location.hash.slice(1)
+  if (!hash) return
+  const index = sections.findIndex(s => s.id === hash)
+  if (index >= 0 && index !== currentSection.value) {
+    scrollToSection(index)
   }
 }
 
@@ -88,15 +253,39 @@ const handleKeydown = (e) => {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  window.addEventListener('hashchange', syncHashToSection)
+  // Initial hash: scroll to section after DOM is ready
+  nextTick(() => syncHashToSection())
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('hashchange', syncHashToSection)
+  if (scrollEndTimeout.value) {
+    clearTimeout(scrollEndTimeout.value)
+  }
+  if (scrollAnimationId.value) {
+    cancelAnimationFrame(scrollAnimationId.value)
+  }
 })
 </script>
 
 <template>
   <div class="app" :class="{ 'enquete-open': isEnqueteOpen }">
+    <!-- Minimal sticky header (mobile only, Apple-style) -->
+    <header class="mobile-header" :class="{ 'header-hidden': headerHidden }" v-if="!isEnqueteOpen">
+      <span class="mobile-header-logo">Enquête IRVE</span>
+      <span class="mobile-header-title">{{ sections[currentSection]?.label ?? 'Accueil' }}</span>
+      <button
+        type="button"
+        class="mobile-header-cta"
+        @click="openEnquete"
+        aria-label="Participer à l'enquête"
+      >
+        Participer
+      </button>
+    </header>
+
     <!-- Side navigation dots -->
     <nav class="section-nav" v-if="!isEnqueteOpen">
       <button
@@ -110,17 +299,6 @@ onUnmounted(() => {
         <span class="section-tooltip">{{ section.label }}</span>
       </button>
     </nav>
-
-    <!-- Floating CTA button -->
-    <button
-      class="floating-cta"
-      @click="openEnquete"
-      v-if="!isEnqueteOpen"
-    >
-      <span class="floating-cta-icon">&#128203;</span>
-      <span class="floating-cta-text">Participer</span>
-      <span class="floating-cta-pulse"></span>
-    </button>
 
     <!-- Main scroll container -->
     <div
@@ -198,26 +376,21 @@ html, body {
   position: relative;
 }
 
-/* Scroll container with snap */
+/* Scroll container - no CSS snap, handled by JS */
 .scroll-container {
   height: 100vh;
   overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-top: calc(56px + env(safe-area-inset-top, 0));
+  overscroll-behavior: contain;
 }
 
 .full-section {
-  min-height: 100vh;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  min-height: calc(100vh - 56px - env(safe-area-inset-top, 0));
   position: relative;
-  display: flex;
-  flex-direction: column;
 }
 
 .section-content {
-  flex: 1;
-  overflow-y: auto;
   padding-bottom: 80px;
 }
 
@@ -297,6 +470,7 @@ html, body {
 .scroll-indicator {
   position: absolute;
   bottom: 2rem;
+  bottom: calc(2rem + env(safe-area-inset-bottom, 0));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -337,81 +511,95 @@ html, body {
   }
 }
 
-/* Floating CTA button */
-.floating-cta {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
+/* Sticky header */
+.mobile-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: white;
-  border: none;
-  border-radius: 999px;
-  font-size: 1rem;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0 1.5rem;
+  padding-top: env(safe-area-inset-top, 0);
+  min-height: 56px;
+  height: calc(56px + env(safe-area-inset-top, 0));
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 110;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-header.header-hidden {
+  transform: translateY(-100%);
+}
+
+.mobile-header-logo {
   font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-  z-index: 90;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1rem;
+  color: var(--color-text);
+  flex-shrink: 0;
 }
 
-.floating-cta:hover {
-  transform: translateX(-50%) scale(1.05);
-  box-shadow: 0 6px 30px rgba(16, 185, 129, 0.5);
+.mobile-header-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  flex: 1;
+  text-align: center;
+  padding: 0 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.floating-cta-icon {
-  font-size: 1.25rem;
-}
-
-.floating-cta-pulse {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
+.mobile-header-cta {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
   background: var(--color-primary);
-  animation: pulse 2s infinite;
-  z-index: -1;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
+.mobile-header-cta:hover {
+  background: var(--color-primary-dark);
 }
 
 /* Mobile adjustments */
 @media (max-width: 768px) {
+  .mobile-header {
+    padding: 0 1rem;
+  }
+
+  .mobile-header-logo {
+    font-size: 0.9375rem;
+    max-width: 30%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-header-title {
+    font-size: 0.9375rem;
+    padding: 0 0.5rem;
+  }
+
+  .mobile-header-cta {
+    padding: 0.5rem 0.75rem;
+  }
+
   .section-nav {
-    right: 0.5rem;
-    gap: 0.5rem;
-  }
-
-  .section-dot {
-    width: 10px;
-    height: 10px;
-  }
-
-  .section-tooltip {
     display: none;
-  }
-
-  .floating-cta {
-    bottom: 1.5rem;
-    padding: 0.875rem 1.5rem;
-    font-size: 0.9rem;
   }
 
   .scroll-indicator {
     bottom: 5rem;
+    bottom: calc(5rem + env(safe-area-inset-bottom, 0));
   }
 }
 
