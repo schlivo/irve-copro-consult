@@ -31,6 +31,12 @@ const routes = [
     path: '/faq',
     name: 'faq',
     component: () => import('../views/FaqView.vue')
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminView.vue'),
+    meta: { standalone: true }
   }
 ]
 

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 import surveyRouter from './routes/survey.js';
-import statsRouter from './routes/stats.js';
+import statsRouter, { handleExportCSV } from './routes/stats.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,7 +22,8 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
-// API routes
+// API routes - explicit /api/stats/export first so it's always registered
+app.get('/api/stats/export', handleExportCSV);
 app.use('/api/survey', surveyRouter);
 app.use('/api/stats', statsRouter);
 

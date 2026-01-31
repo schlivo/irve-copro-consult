@@ -1,13 +1,20 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
+import AdminView from './views/AdminView.vue'
 import './style.css'
 
-// Minimal router just to prevent router-link errors
-// The actual navigation is handled by scroll in App.vue
+// Router with admin page as standalone
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminView,
+      meta: { standalone: true }
+    },
+    // Catch-all for tunnel navigation
     { path: '/:pathMatch(.*)*', component: { template: '' } }
   ]
 })

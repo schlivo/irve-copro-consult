@@ -102,6 +102,7 @@ L'application est accessible sur http://localhost:5173
 |---------|-----|-------------|
 | POST | /api/survey | Soumettre une réponse |
 | GET | /api/stats | Statistiques agrégées |
+| GET | /api/stats/export | Export CSV (admin, header `X-Admin-Password`) |
 | GET | /api/health | Health check |
 
 ### Format des données (POST /api/survey)

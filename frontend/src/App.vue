@@ -1,5 +1,6 @@
 <script setup>
-import { ref, provide, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, provide, onMounted, onUnmounted, nextTick, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import SvgIcon from './components/SvgIcon.vue'
 
 // Import all views as components
@@ -9,6 +10,9 @@ import OptionsView from './views/OptionsView.vue'
 import AidesView from './views/AidesView.vue'
 import FaqView from './views/FaqView.vue'
 import EnqueteView from './views/EnqueteView.vue'
+
+const route = useRoute()
+const isStandalonePage = computed(() => route.meta?.standalone === true)
 
 const sections = [
   { id: 'accueil', label: 'Accueil', icon: 'home', component: HomeView },
@@ -272,7 +276,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="app" :class="{ 'enquete-open': isEnqueteOpen }">
+  <!-- Standalone pages (admin, etc.) -->
+  <router-view v-if="isStandalonePage" />
+
+  <!-- Main tunnel navigation -->
+  <div v-else class="app" :class="{ 'enquete-open': isEnqueteOpen }">
     <!-- Minimal sticky header (mobile only, Apple-style) -->
     <header class="mobile-header" :class="{ 'header-hidden': headerHidden }" v-if="!isEnqueteOpen">
       <span class="mobile-header-logo">Enquête IRVE</span>
