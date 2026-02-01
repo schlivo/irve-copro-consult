@@ -820,10 +820,33 @@
                 const clone = flyer.cloneNode(true);
                 clone.id = 'flyerClone';
                 clone.classList.add('flyer-duplicate');
-                flyer.parentNode.insertBefore(clone, flyer.nextSibling);
-            }
 
-            window.print();
+                // Remove duplicate IDs from clone to avoid conflicts
+                const cloneQrCode = clone.querySelector('#qrCode');
+                if (cloneQrCode) {
+                    cloneQrCode.removeAttribute('id');
+                    // Force reload the image in clone to ensure it renders
+                    const currentSrc = cloneQrCode.src;
+                    cloneQrCode.src = '';
+                    cloneQrCode.src = currentSrc;
+                }
+
+                flyer.parentNode.insertBefore(clone, flyer.nextSibling);
+
+                // Wait for clone's QR image to load before printing
+                if (cloneQrCode) {
+                    if (cloneQrCode.complete) {
+                        window.print();
+                    } else {
+                        cloneQrCode.onload = () => window.print();
+                        cloneQrCode.onerror = () => window.print(); // Print anyway if error
+                    }
+                } else {
+                    window.print();
+                }
+            } else {
+                window.print();
+            }
 
             // Clean up clone after printing
             setTimeout(() => {
