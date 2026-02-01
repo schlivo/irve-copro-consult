@@ -5,7 +5,7 @@
 [![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D.svg)](https://vuejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg)](https://www.docker.com/)
 [![RGPD](https://img.shields.io/badge/RGPD-compliant-blue.svg)](#rgpd)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/schlivo/irve-copro-consult/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/schlivo/evpoll/pulls)
 
 Application web permettant aux copropriétés de sonder leurs résidents sur l'installation de bornes de recharge pour véhicules électriques (IRVE - Infrastructure de Recharge pour Véhicules Électriques).
 
@@ -125,7 +125,7 @@ enquete-irve/
 
 ```bash
 # Cloner le projet
-git clone https://github.com/schlivo/irve-copro-consult.git
+git clone https://github.com/schlivo/evpoll.git
 cd enquete-irve
 
 # Backend
@@ -222,7 +222,7 @@ sudo apt install -y nginx
 ```bash
 # Cloner le projet
 cd /var/www
-sudo git clone https://github.com/schlivo/irve-copro-consult.git
+sudo git clone https://github.com/schlivo/evpoll.git
 sudo chown -R $USER:$USER enquete-irve
 cd enquete-irve
 
@@ -346,7 +346,7 @@ Requires: Swarm initialized, overlay network `traefik-public`, Traefik with `web
 
 ```bash
 # Cloner et configurer
-git clone https://github.com/schlivo/irve-copro-consult.git
+git clone https://github.com/schlivo/evpoll.git
 cd enquete-irve
 
 # Modifier docker-compose.yml avec votre domaine
@@ -625,8 +625,8 @@ Ce projet est open source et peut être librement utilisé, modifié et distribu
 
 ## Support
 
-- **Issues** : [GitHub Issues](https://github.com/schlivo/irve-copro-consult/issues)
-- **Discussions** : [GitHub Discussions](https://github.com/schlivo/irve-copro-consult/discussions)
+- **Issues** : [GitHub Issues](https://github.com/schlivo/evpoll/issues)
+- **Discussions** : [GitHub Discussions](https://github.com/schlivo/evpoll/discussions)
 
 ---
 
