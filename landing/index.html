@@ -508,10 +508,14 @@
     }
 
     /* Language toggle */
-    .lang-en { display: none; }
-    html[lang="en"] .lang-fr { display: none; }
-    html[lang="en"] .lang-en { display: block; }
-    html[lang="en"] .lang-en.inline { display: inline; }
+    .lang-en { display: none !important; }
+    .lang-fr { display: block; }
+    span.lang-fr, a.lang-fr { display: inline; }
+
+    html[lang="en"] .lang-fr { display: none !important; }
+    html[lang="en"] .lang-en { display: block !important; }
+    html[lang="en"] span.lang-en,
+    html[lang="en"] a.lang-en { display: inline !important; }
   </style>
 </head>
 <body>
