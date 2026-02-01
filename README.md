@@ -80,7 +80,7 @@ enquete-irve/
 
 ```bash
 # Cloner le projet
-git clone https://github.com/votre-repo/enquete-irve.git
+git clone https://github.com/schlivo/irve-copro-consult.git
 cd enquete-irve
 
 # Backend
@@ -177,7 +177,7 @@ sudo apt install -y nginx
 ```bash
 # Cloner le projet
 cd /var/www
-sudo git clone https://github.com/votre-repo/enquete-irve.git
+sudo git clone https://github.com/schlivo/irve-copro-consult.git
 sudo chown -R $USER:$USER enquete-irve
 cd enquete-irve
 
@@ -301,7 +301,7 @@ Requires: Swarm initialized, overlay network `traefik-public`, Traefik with `web
 
 ```bash
 # Cloner et configurer
-git clone https://github.com/votre-repo/enquete-irve.git
+git clone https://github.com/schlivo/irve-copro-consult.git
 cd enquete-irve
 
 # Modifier docker-compose.yml avec votre domaine
@@ -557,12 +557,40 @@ sudo certbot renew --dry-run
 
 ---
 
+## Développement
+
+Ce projet a été développé avec l'assistance de [Claude](https://claude.ai) (Anthropic), un assistant IA. Claude a contribué à :
+
+- L'architecture et la structure du projet
+- L'implémentation du backend Express et du frontend Vue 3
+- Les mesures de sécurité (CSP, rate limiting, protection RGPD)
+- La documentation et les bonnes pratiques
+
+Le code a été revu et validé par un développeur humain. Cette transparence reflète notre conviction que la collaboration humain-IA peut produire des logiciels de qualité tout en restant honnête sur les outils utilisés.
+
+---
+
 ## Licence
 
-Usage privé - Copropriété. Code source disponible pour audit et personnalisation.
+MIT License - Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+Ce projet est open source et peut être librement utilisé, modifié et distribué.
 
 ---
 
 ## Support
 
-Pour toute question technique, ouvrir une issue sur le dépôt GitHub ou contacter le développeur.
+- **Issues** : [GitHub Issues](https://github.com/schlivo/irve-copro-consult/issues)
+- **Discussions** : [GitHub Discussions](https://github.com/schlivo/irve-copro-consult/discussions)
+
+---
+
+## Contribuer
+
+Les contributions sont les bienvenues ! N'hésitez pas à :
+
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/amelioration`)
+3. Commit vos changements (`git commit -m 'Ajout d'une fonctionnalité'`)
+4. Push sur la branche (`git push origin feature/amelioration`)
+5. Ouvrir une Pull Request

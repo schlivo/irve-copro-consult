@@ -5,7 +5,7 @@ version: '3.8'
 services:
   enquete-irve:
     build: .
-    image: ghcr.io/schlivo/enquete-irve:latest
+    image: ghcr.io/schlivo/irve-copro-consult:latest
     # Load .env into container (so ADMIN_PASSWORD etc. are used with both compose and stack deploy)
     env_file: .env
     # Expose port for local run (docker compose up); stack deploy can still use Traefik only
