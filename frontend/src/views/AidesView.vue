@@ -157,14 +157,18 @@ import SvgIcon from '../components/SvgIcon.vue'
         <h3>Sources et liens utiles</h3>
         <ul class="sources-list">
           <li>
-            <img src="https://www.google.com/s2/favicons?domain=advenir.mobi&sz=32" alt="" class="source-favicon" />
+            <span class="source-favicon source-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            </span>
             <a href="https://advenir.mobi/" target="_blank" rel="noopener">
               Programme ADVENIR officiel
             </a>
             <span class="source-desc">Primes et conditions d'éligibilité</span>
           </li>
           <li>
-            <img src="https://www.google.com/s2/favicons?domain=electro-mob.com&sz=32" alt="" class="source-favicon" />
+            <span class="source-favicon source-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </span>
             <a href="https://www.electro-mob.com/borne-recharge-copropriete-colonne-horizontale-enedis" target="_blank" rel="noopener">
               Electro-Mob
             </a>
@@ -487,6 +491,18 @@ import SvgIcon from '../components/SvgIcon.vue'
   height: 20px;
   flex-shrink: 0;
   border-radius: 3px;
+}
+
+.source-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+.source-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .enedis-logo {
