@@ -200,9 +200,15 @@
       padding: 16px 24px;
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      display: flex;
+      display: none;
       align-items: center;
       gap: 12px;
+    }
+
+    @media (min-width: 969px) {
+      .hero-badge {
+        display: flex;
+      }
     }
 
     .hero-badge svg {
@@ -481,11 +487,6 @@
         order: -1;
       }
 
-      .hero-badge {
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
 
       .problem-grid,
       .features-grid,
